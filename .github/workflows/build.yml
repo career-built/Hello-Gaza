@@ -1,0 +1,87 @@
+name: Go CI
+
+on:
+  push:
+    branches:
+      - dev
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v2
+
+      - name: Set Up Go
+        uses: actions/setup-go@v2
+        with:
+          go-version: '1.21.4' 
+
+      - name: Install golangci-lint
+      #   run: go get -u github.com/golangci/golangci-lint/cmd/golangci-lint
+
+      - name: Run golangci-lint
+        # run: golangci-lint run
+
+      - name: Run Tests
+        run: go test -v -cover ./...
+
+      # - name: Install gosec
+      #   run: go get -u github.com/securego/gosec/v2/cmd/gosec
+
+      - name: Run Security Scan
+        # run: gosec -quiet ./...
+
+      - name: Build
+        run: |
+            echo "Current Directory: $(pwd)"
+            ls -al
+            go build -o myapp
+            ls -al
+
+      - name: 'Upload Goland Build File Artifact whith a retention period 1 day'
+        uses: actions/upload-artifact@v3
+        with:
+          name: myappFile
+          path: myapp
+          retention-days: 1
+
+  build-docker-image:
+    runs-on: ubuntu-latest
+
+    needs: build
+
+    steps:                                      
+      - name: Checkout Repository
+        uses: actions/checkout@v2 
+
+      - name: Get Timestamp
+        id: Timestamp
+        run: echo "::set-output name=dateTime::$(date '+%Y%m%d%H%M')"
+
+      - name: Download myappFile artifact
+        uses: actions/download-artifact@v3
+        with:
+          name: myappFile
+
+      - name: Set Up Docker
+        uses: docker/setup-buildx-action@v1
+
+      - name: Tag Existing Docker Image
+        run: docker tag 20170044/hellogaza:latest 20170044/hellogaza:${{ steps.Timestamp.outputs.dateTime }}
+
+      - name: Build Docker Image
+        run: docker build -t 20170044/hellogaza:latest . 
+        
+      - name: Log in to Docker Registry
+        uses: docker/login-action@v1
+        with:
+          username: ${{ secrets.DOCKER_USERNAME }}
+          password: ${{ secrets.DOCKER_PASSWORD }}
+
+
+      - name: Push Docker Image
+        run: |
+          docker push 20170044/hellogaza:latest
+          docker push 20170044/hellogaza:${{ steps.Timestamp.outputs.dateTime }}
