@@ -3,7 +3,6 @@ package main
 
 import "testing"
 
-// Reviewed By KH
 func TestPass(t *testing.T) {
 	//result := DBConnect()
 	result := 1
