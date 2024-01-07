@@ -1,6 +1,6 @@
 module hello-gaza
 
-go 1.21.4
+go 1.23
 
 require (
 	4d63.com/gocheckcompilerdirectives v1.2.1 // indirect

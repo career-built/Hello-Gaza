@@ -3,7 +3,7 @@ version: '3'
 services:
   golang-app:
     container_name: hello-gaza-api
-    image: gaza-runimage:latest
+    image: gaza-runimage
     ports:
       - "8080:8080"
     networks:
