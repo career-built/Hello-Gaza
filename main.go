@@ -1,25 +1,33 @@
 package main
 
 import (
+	"example/baseProject/api"
+	"example/baseProject/database"
+	"example/baseProject/product"
 	"fmt"
-	"hello-gaza/controller"
-	"hello-gaza/database"
+	"log"
 
 	"github.com/labstack/echo/v4"
-	_ "github.com/lib/pq"
 )
 
 func main() {
-	fmt.Println("Hiiiiiiiiiiiiiiiiiiii2")
+	fmt.Println("Starting Base")
+	dbConnector := database.NewPostgres()
+	if dbConnector == nil {
+		log.Fatal("can't connect to database")
+	}
+	defer dbConnector.CloseDB()
 
-	database.InitDB()
-	defer database.CloseDB()
-	fmt.Println("Hiiiiiiiiiiiiiiiiiiii22222")
-	// Insert a product into the database
+	//Path the Database to the base Db interface
+	productMgr := product.NewProductService(dbConnector)
+
+	//Path the product feature to the base manger interface
+	productRouter := api.NewProductRouter(productMgr)
+
 	e := echo.New()
-	e.POST("/product/create", controller.CreateProduct)
-	e.GET("/product/:id", controller.GetProductByID)
+	e.POST("/product/create", productRouter.CreateProduct)
+	e.GET("/product/:id", productRouter.GetProductByID)
+
 	e.Logger.Fatal(e.Start(":3030"))
 
-	fmt.Println("Selected Product:")
 }
