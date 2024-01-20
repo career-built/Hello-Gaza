@@ -9,11 +9,16 @@ import (
 	"github.com/labstack/echo/v4"
 )
 
-type ProductRouter struct {
-	productManager product.ProductManager
+type ProductManager interface {
+	Add(product *product.Product, queueName string) error
+	GetByID(id int) (*product.Product, error)
 }
 
-func NewProductRouter(productManager product.ProductManager) *ProductRouter {
+type ProductRouter struct {
+	productManager ProductManager
+}
+
+func NewProductRouter(productManager ProductManager) *ProductRouter {
 	return &ProductRouter{
 		productManager: productManager,
 	}

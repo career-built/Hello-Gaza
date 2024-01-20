@@ -1,18 +1,32 @@
 package product
 
 import (
-	"example/baseProject/database"
-	"example/baseProject/messageBroker"
+	"database/sql"
 	"log"
 	"strconv"
 )
 
-type ProductService struct {
-	dbConnector   database.DbConnector
-	messageBroker messageBroker.MessageBroker
+type DbConnector interface {
+	// start() error
+	Insert(tableName string, argsKeys []string, argsVals []string) error
+	CloseDB() error
+
+	//TODO: Remove SQL Package Make it puplic
+	SelectById(tableName string, id int) (*sql.Rows, error)
 }
 
-func NewProductService(connector database.DbConnector, message_Broker messageBroker.MessageBroker) *ProductService {
+type MessageBroker interface {
+	PublishMessages(exchange string, queueName string, messages []string) error
+	ConsumeMessages(queueName string, handler func(message string)) error
+	Close() error
+}
+
+type ProductService struct {
+	dbConnector   DbConnector
+	messageBroker MessageBroker
+}
+
+func NewProductService(connector DbConnector, message_Broker MessageBroker) *ProductService {
 	return &ProductService{
 		dbConnector:   connector,
 		messageBroker: message_Broker,
