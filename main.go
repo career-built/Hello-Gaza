@@ -3,7 +3,9 @@ package main
 import (
 	"example/baseProject/api"
 	"example/baseProject/database"
+	"example/baseProject/messageBroker"
 	"example/baseProject/product"
+
 	"fmt"
 	"log"
 
@@ -12,16 +14,24 @@ import (
 
 func main() {
 	fmt.Println("Starting Base")
+	// define the base dbConnector
 	dbConnector := database.NewPostgres()
 	if dbConnector == nil {
 		log.Fatal("can't connect to database")
 	}
 	defer dbConnector.CloseDB()
+	// define the base Message Broker
+	broker, err := messageBroker.NewRabbitMQBroker("amqp://guest:guest@localhost:5672/")
+	if err != nil {
+		panic(err)
+	}
+	defer broker.Close()
 
-	//Path the Database to the base Db interface
-	productMgr := product.NewProductService(dbConnector)
+	//inject the Database to the base Db interface
+	//inject the messege to the base broker interface
+	productMgr := product.NewProductService(dbConnector, broker)
 
-	//Path the product feature to the base manger interface
+	//inject the product feature to the base manager interface
 	productRouter := api.NewProductRouter(productMgr)
 
 	e := echo.New()

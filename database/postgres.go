@@ -2,6 +2,7 @@ package database
 
 import (
 	"database/sql"
+	"example/baseProject/envvariable"
 	"fmt"
 	"log"
 	"strings"
@@ -9,13 +10,21 @@ import (
 	_ "github.com/lib/pq"
 )
 
-const (
-	host     = "localhost"
-	port     = 5432
-	user     = "postgres"
-	password = "1234"
-	dbname   = "test"
+var (
+	host     = envvariable.Host
+	port     = envvariable.Port
+	user     = envvariable.User
+	password = envvariable.Password
+	dbname   = envvariable.DBName
 )
+
+// const (
+// 	host     =
+// 	port     = 5432
+// 	user     = "postgres"
+// 	password = "1234"
+// 	dbname   = "test"
+// )
 
 type Postgres struct {
 	db *sql.DB

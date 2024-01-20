@@ -28,7 +28,7 @@ func (obj *ProductRouter) CreateProduct(c echo.Context) error {
 		return echo.NewHTTPError(http.StatusInternalServerError, err.Error())
 	}
 	//Service invoc
-	if err := obj.productManager.Add(product); err != nil {
+	if err := obj.productManager.Add(product, ""); err != nil {
 		return echo.NewHTTPError(http.StatusInternalServerError, err.Error())
 	}
 
@@ -50,10 +50,15 @@ func (obj *ProductRouter) GetProductByID(c echo.Context) error {
 	}
 	// Fetch the corresponding product from the database
 	fmt.Printf("new Requested product ID: %d\n", productID)
-	product := obj.productManager.GetByID(productID)
-	if product == nil {
+	product, err := obj.productManager.GetByID(productID)
+	if err == nil {
 		return c.JSON(http.StatusBadRequest, map[string]string{
 			"error": "Unaple to Fetch product from DB",
+		})
+	}
+	if product == nil {
+		return c.JSON(http.StatusOK, map[string]string{
+			"INFO": "Product Not Found",
 		})
 	}
 	// Respond with a JSON message
